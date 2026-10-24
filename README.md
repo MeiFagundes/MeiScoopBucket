@@ -9,6 +9,7 @@ My personal bucket for [Scoop](https://scoop.sh), the Windows command-line insta
 ```powershell
 scoop bucket add mei https://github.com/MeiFagundes/MeiScoopBucket
 scoop install mei/zapfast
+scoop install mei/mvoltplus
 ```
 
 ## Apps
@@ -16,6 +17,7 @@ scoop install mei/zapfast
 | Manifest | App | Architectures |
 | --- | --- | --- |
 | `zapfast` | [ZapFast](https://zapfast.rocks), a lightweight native WhatsApp client | x64, ARM64 |
+| `mvoltplus` | [mVolt+](https://github.com/b00nz/mVolt), NVIDIA GPU tuning and monitoring | x64 |
 
 ZapFast uses the official Windows ZIP releases. Scoop creates a `zapfast`
 command and a Start menu shortcut. Update it with `scoop update zapfast`.
@@ -25,6 +27,15 @@ Settings stay in `%APPDATA%\paolino\zapfast\config`, and sessions, archives,
 and caches stay in `%LOCALAPPDATA%\paolino\zapfast`. Scoop upgrades and
 uninstalls leave these folders intact. See ZapFast's
 [settings and files documentation](https://zapfast.rocks/settings-and-files/).
+
+mVolt+ is distributed as the official standalone Windows executable from the
+[upstream GitHub releases](https://github.com/b00nz/mVolt/releases). Scoop adds
+the `mvoltplus` command and an `mVolt+` Start menu shortcut. Run the app as
+administrator when tuning the GPU. Its profiles and preferences remain in
+`%LOCALAPPDATA%\mVolt+`, outside the Scoop app directory, so Scoop upgrades do
+not relocate or remove them. The upstream guide documents its
+[profile storage location](https://github.com/b00nz/mVolt/blob/main/docs/guide.md#files-and-logging).
+Update it with `scoop update mvoltplus`.
 
 ## Automation
 
