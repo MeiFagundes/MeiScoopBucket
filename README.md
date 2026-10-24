@@ -1,42 +1,56 @@
-# Scoop Bucket Template
+# Mei's Scoop Bucket
 
-<!-- Uncomment the following line after replacing placeholders -->
-<!-- [![Tests](https://github.com/<username>/<bucketname>/actions/workflows/ci.yml/badge.svg)](https://github.com/<username>/<bucketname>/actions/workflows/ci.yml) [![Excavator](https://github.com/<username>/<bucketname>/actions/workflows/excavator.yml/badge.svg)](https://github.com/<username>/<bucketname>/actions/workflows/excavator.yml) -->
+[![Tests](https://github.com/MeiFagundes/MeiScoopBucket/actions/workflows/ci.yml/badge.svg)](https://github.com/MeiFagundes/MeiScoopBucket/actions/workflows/ci.yml) [![Excavator](https://github.com/MeiFagundes/MeiScoopBucket/actions/workflows/excavator.yml/badge.svg)](https://github.com/MeiFagundes/MeiScoopBucket/actions/workflows/excavator.yml)
 
-Template bucket for [Scoop](https://scoop.sh), the Windows command-line installer.
+My personal bucket for [Scoop](https://scoop.sh), the Windows command-line installer.
 
-## How do I use this template?
+## Install
 
-1. Generate your own copy of this repository with the "Use this template"
-   button.
-2. Allow all GitHub Actions:
-   - Navigate to `Settings` - `Actions` - `General` - `Actions permissions`.
-   - Select `Allow all actions and reusable workflows`.
-   - Then `Save`.
-3. Workflow permissions:
-   - Navigate to `Settings` - `Actions` - `General` - `Workflow permissions`.
-   - Ensure `Read repository contents and packages permissions` is selected.
-   - Then `Save`.
-4. Document the bucket in `README.md`.
-5. Replace the placeholder repository string in `bin/auto-pr.ps1`.
-6. Create new manifests by copying `bucket/app-name.json.template` to
-   `bucket/<app-name>.json`.
-7. Commit and push changes.
-8. If you'd like your bucket to be indexed on `https://scoop.sh`, add the
-   topic `scoop-bucket` to your repository.
-
-## How do I install these manifests?
-
-After manifests have been committed and pushed, run the following:
-
-```pwsh
-scoop bucket add <bucketname> https://github.com/<username>/<bucketname>
-scoop install <bucketname>/<manifestname>
+```powershell
+scoop bucket add mei https://github.com/MeiFagundes/MeiScoopBucket
+scoop install mei/zapfast
 ```
 
-## How do I contribute new manifests?
+## Apps
 
-To make a new manifest contribution, please read the [Contributing
-Guide](https://github.com/ScoopInstaller/.github/blob/main/.github/CONTRIBUTING.md)
-and [App Manifests](https://github.com/ScoopInstaller/Scoop/wiki/App-Manifests)
-wiki page.
+| Manifest | App | Architectures |
+| --- | --- | --- |
+| `zapfast` | [ZapFast](https://zapfast.rocks), a lightweight native WhatsApp client | x64, ARM64 |
+
+ZapFast uses the official Windows ZIP releases. Scoop creates a `zapfast`
+command and a Start menu shortcut. Update it with `scoop update zapfast`.
+The portable updater marker is removed so updates remain managed by Scoop.
+
+Settings stay in `%APPDATA%\paolino\zapfast\config`, and sessions, archives,
+and caches stay in `%LOCALAPPDATA%\paolino\zapfast`. Scoop upgrades and
+uninstalls leave these folders intact. See ZapFast's
+[settings and files documentation](https://zapfast.rocks/settings-and-files/).
+
+## Automation
+
+- CI runs the template's Scoop tests on Windows PowerShell and PowerShell 7
+  for pushes and pull requests, and can be started manually.
+- Excavator checks for new releases every four hours and can be started
+  manually. Automated updates use the Scoop template's bot identity.
+- The template's issue and pull request handlers remain enabled.
+
+Repository Actions settings allow all actions and reusable workflows, with
+read-only default token permissions. Workflows request write permissions
+only where the template's automation needs them.
+
+## Contributing
+
+Read Scoop's [contribution guide](https://github.com/ScoopInstaller/.github/blob/main/.github/CONTRIBUTING.md)
+and [app manifest documentation](https://github.com/ScoopInstaller/Scoop/wiki/App-Manifests).
+Create manifests in `bucket/`, using `bucket/app-name.json.template` as a starting point.
+
+Useful checks from the repository root:
+
+```powershell
+.\bin\checkver.ps1 zapfast
+.\bin\checkhashes.ps1 zapfast
+.\bin\test.ps1
+```
+
+The test suite requires Pester 5.2.0 or newer and BuildHelpers 2.0.1 or newer;
+CI installs these dependencies automatically.
