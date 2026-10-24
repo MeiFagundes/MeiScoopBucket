@@ -8,8 +8,12 @@ My personal bucket for [Scoop](https://scoop.sh), the Windows command-line insta
 
 ```powershell
 scoop bucket add mei https://github.com/MeiFagundes/MeiScoopBucket
+```
+
+Then install an app from the bucket, for example:
+
+```powershell
 scoop install mei/zapfast
-scoop install mei/mvoltplus
 ```
 
 ## Apps
