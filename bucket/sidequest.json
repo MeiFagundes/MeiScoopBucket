@@ -1,0 +1,28 @@
+{
+    "version": "1.4.2",
+    "description": "Desktop app for sideloading and managing apps on VR headsets",
+    "homepage": "https://github.com/SideQuestVR/SideQuest",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/SideQuestVR/SideQuest/releases/download/v1.4.2/SideQuest-1.4.2-x64-win.zip",
+            "hash": "65693d00baace97d446422fcdbd8585278b7961d33f5aa54ef1624c2c23182fb"
+        }
+    },
+    "shortcuts": [
+        [
+            "SideQuest.exe",
+            "SideQuest"
+        ]
+    ],
+    "checkver": {
+        "github": "https://github.com/SideQuestVR/SideQuest"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/SideQuestVR/SideQuest/releases/download/v$version/SideQuest-$version-x64-win.zip"
+            }
+        }
+    }
+}
