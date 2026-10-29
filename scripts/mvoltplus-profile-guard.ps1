@@ -88,7 +88,7 @@ function Get-JsonFromBytes([byte[]] $Bytes) {
     return ($json | ConvertFrom-Json -ErrorAction Stop)
 }
 
-function Save-Snapshot([string] $Path, [switch] $Incident) {
+function Save-Snapshot([string] $Path, [switch] $HealthCheck) {
     $bytes = Get-StableDocument $Path
     $document = Get-JsonFromBytes $bytes
     if (!$document.schema -or !$document.adapter_id -or !$document.vbios_id -or $null -eq $document.profiles) {
@@ -96,7 +96,8 @@ function Save-Snapshot([string] $Path, [switch] $Incident) {
     }
     $profileIds = @($document.profiles | ForEach-Object { [string]$_.id })
     $empty = $profileIds.Count -eq 0
-    if ($empty -and !$Incident) {
+    $incident = $HealthCheck -and ($profileIds -notcontains $ExpectedProfileId)
+    if ($empty -and !$HealthCheck) {
         throw "Refusing to replace a valid recovery snapshot with an empty profile document: $Path"
     }
     if ($document.adapter_id -notmatch '^[\w-]+$' -or $document.vbios_id -notmatch '^[\w.\-]+$') {
@@ -198,9 +199,8 @@ if ($profileFiles.Count -eq 0) {
 
 $expectedFound = $false
 foreach ($file in $profileFiles) {
-    $isIncident = $Mode -eq 'HealthCheck'
     try {
-        $snapshot = Save-Snapshot -Path $file.FullName -Incident:$isIncident
+        $snapshot = Save-Snapshot -Path $file.FullName -HealthCheck:($Mode -eq 'HealthCheck')
         $bytes = Get-StableDocument $file.FullName
         $document = Get-JsonFromBytes $bytes
         $ids = @($document.profiles | ForEach-Object { [string]$_.id })

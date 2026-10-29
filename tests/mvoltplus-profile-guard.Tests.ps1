@@ -75,6 +75,25 @@ Describe 'mVolt+ profile guard' {
         $healthResult.Output | Should -Match ([regex]::Escape($script:PowerShell))
     }
 
+    It 'retains healthy scheduled snapshots and preserves missing-profile incidents separately' {
+        $source = Join-Path $script:TempRoot 'healthy-retention'
+        $profile = Join-Path $source 'profiles\gpu.json'
+        $backup = Join-Path $script:TempRoot 'backups-healthy-retention'
+        foreach ($revision in 1..3) {
+            New-ProfileFixture $profile @($script:ProtectedId) $revision
+            (Invoke-Guard HealthCheck $source $backup -Extra '-KeepSnapshots 1').ExitCode | Should -Be 0
+        }
+        $snapshots = @(Get-ChildItem (Join-Path $backup 'snapshots') -Filter metadata.json -Recurse)
+        $snapshots.Count | Should -Be 1
+        (Get-Content $snapshots[0].FullName -Raw | ConvertFrom-Json).revision | Should -Be 3
+        Test-Path (Join-Path $backup 'incidents') | Should -BeFalse
+
+        New-ProfileFixture $profile @('BFB2BE2D-8930-47ED-9211-C1F4CF43FE24') 4
+        (Invoke-Guard HealthCheck $source $backup -Extra '-KeepSnapshots 1').ExitCode | Should -Be 2
+        @(Get-ChildItem (Join-Path $backup 'incidents') -Filter metadata.json -Recurse).Count | Should -Be 1
+        @(Get-ChildItem (Join-Path $backup 'snapshots') -Filter metadata.json -Recurse).Count | Should -Be 1
+    }
+
     It 'retries and snapshots the latest bytes when a profile changes during a read' {
         $source = Join-Path $script:TempRoot 'changing'
         $profile = Join-Path $source 'profiles\gpu.json'
