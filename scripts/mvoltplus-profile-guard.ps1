@@ -4,7 +4,7 @@ param(
     [string] $Mode = 'Backup',
     [string] $SourceDirectory = (Join-Path $env:LOCALAPPDATA 'mVolt+'),
     [string] $BackupDirectory = (Join-Path $env:LOCALAPPDATA 'mVoltPlus-ProfileBackups'),
-    [string] $ExpectedProfileId = 'E48BFF72-A9EC-4763-9BF2-F2563D5A97A8',
+    [string] $ExpectedProfileId = '',
     [string[]] $ExecutablePath = @(),
     [int] $KeepSnapshots = 30,
     [switch] $SkipRetention
@@ -27,6 +27,7 @@ $profilesDirectory = Join-Path $SourceDirectory 'profiles'
 $snapshotRoot = Join-Path $BackupDirectory 'snapshots'
 $incidentRoot = Join-Path $BackupDirectory 'incidents'
 $logPath = Join-Path $BackupDirectory 'health.log'
+$profileLabel = if ($ExpectedProfileId) { "Protected profile $ExpectedProfileId" } else { 'Profiles' }
 
 function Write-GuardLog([string] $Message) {
     if (!(Test-Path -LiteralPath $BackupDirectory)) {
@@ -96,7 +97,7 @@ function Save-Snapshot([string] $Path, [switch] $HealthCheck) {
     }
     $profileIds = @($document.profiles | ForEach-Object { [string]$_.id })
     $empty = $profileIds.Count -eq 0
-    $incident = $HealthCheck -and ($profileIds -notcontains $ExpectedProfileId)
+    $incident = $HealthCheck -and ($empty -or ($ExpectedProfileId -and $profileIds -notcontains $ExpectedProfileId))
     if ($empty -and !$HealthCheck) {
         throw "Refusing to replace a valid recovery snapshot with an empty profile document: $Path"
     }
@@ -145,7 +146,7 @@ function Save-Snapshot([string] $Path, [switch] $HealthCheck) {
         revision = $document.revision
         profile_ids = $profileIds
         profile_names = @($document.profiles | ForEach-Object { [string]$_.name })
-        protected_baseline = ($profileIds -contains $ExpectedProfileId)
+        protected_baseline = ([bool]$ExpectedProfileId -and $profileIds -contains $ExpectedProfileId)
         empty_profiles = $empty
         incident = [bool]$Incident
         gpu_name = [string]$document.gpu_name
@@ -182,7 +183,7 @@ function Invoke-Retention([string] $GpuRoot) {
 
 if (!(Test-Path -LiteralPath $profilesDirectory -PathType Container)) {
     if ($Mode -eq 'Backup') { Write-Output 'No existing mVolt+ profile directory; fresh install requires no backup.'; exit 0 }
-    $message = 'Protected profile {0} is missing because the profile directory is absent. {1}' -f $ExpectedProfileId,(Get-HealthEvidence)
+    $message = '{0} missing because the profile directory is absent. {1}' -f $profileLabel,(Get-HealthEvidence)
     Write-GuardLog ('WARNING: ' + $message)
     Write-Warning $message
     exit 2
@@ -191,7 +192,7 @@ if (!(Test-Path -LiteralPath $profilesDirectory -PathType Container)) {
 $profileFiles = @(Get-ChildItem -LiteralPath $profilesDirectory -Filter '*.json' -File | Where-Object { $_.Name -notlike '*.bak' })
 if ($profileFiles.Count -eq 0) {
     if ($Mode -eq 'Backup') { throw "Profile directory exists but has no profile JSON files: $profilesDirectory" }
-    $message = 'Protected profile {0} is missing because there are no profile JSON files. {1}' -f $ExpectedProfileId,(Get-HealthEvidence)
+    $message = '{0} missing because there are no profile JSON files. {1}' -f $profileLabel,(Get-HealthEvidence)
     Write-GuardLog ('WARNING: ' + $message)
     Write-Warning $message
     exit 2
@@ -204,7 +205,7 @@ foreach ($file in $profileFiles) {
         $bytes = Get-StableDocument $file.FullName
         $document = Get-JsonFromBytes $bytes
         $ids = @($document.profiles | ForEach-Object { [string]$_.id })
-        if ($ids -contains $ExpectedProfileId) { $expectedFound = $true }
+        if (($ExpectedProfileId -and $ids -contains $ExpectedProfileId) -or (!$ExpectedProfileId -and $ids.Count -gt 0)) { $expectedFound = $true }
         if ($Mode -eq 'Backup') { Write-Output "Profile snapshot: $snapshot" }
     } catch {
         if ($Mode -eq 'Backup') { throw }
@@ -214,11 +215,11 @@ foreach ($file in $profileFiles) {
 }
 
 if ($Mode -eq 'HealthCheck' -and !$expectedFound) {
-    $message = 'Protected profile {0} is missing. {1}' -f $ExpectedProfileId,(Get-HealthEvidence)
+    $message = '{0} missing. {1}' -f $profileLabel,(Get-HealthEvidence)
     Write-GuardLog ('WARNING: ' + $message)
     Write-Warning $message
     exit 2
 }
 
-if ($Mode -eq 'HealthCheck') { Write-GuardLog "Health check OK: protected profile $ExpectedProfileId is present." }
-Write-Output "Health check complete. Protected profile present: $expectedFound"
+if ($Mode -eq 'HealthCheck') { Write-GuardLog "Health check OK: $profileLabel present." }
+Write-Output "Profile check complete. Expected profiles present: $expectedFound"

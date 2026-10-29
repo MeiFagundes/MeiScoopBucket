@@ -12,8 +12,9 @@
         "$ErrorActionPreference = 'Stop'",
         "$profileDirectory = Join-Path $env:LOCALAPPDATA 'mVolt+\\profiles'",
         "if (Test-Path -LiteralPath $profileDirectory -PathType Container) {",
-        "    $scoopRoot = $env:SCOOP",
-        "    if (!$scoopRoot) { $scoopRoot = Split-Path $env:SCOOP_HOME -Parent }",
+        "    $scoopRoot = $scoopdir",
+        "    if (!$scoopRoot) { $scoopRoot = $env:SCOOP }",
+        "    if (!$scoopRoot) { throw 'Cannot resolve the Scoop root for mVolt+ profile backup.' }",
         "    $bucketName = [string]$bucket",
         "    if (!$bucketName) {",
         "        $installInfo = Join-Path $scoopRoot 'apps\\mvoltplus\\current\\scoop-install.json'",
@@ -22,7 +23,7 @@
         "    if (!$bucketName) { throw 'Cannot identify the bucket alias for mVolt+ profile backup.' }",
         "    $guard = Join-Path $scoopRoot (Join-Path ('buckets\\' + $bucketName) 'scripts\\mvoltplus-profile-guard.ps1')",
         "    if (!(Test-Path -LiteralPath $guard -PathType Leaf)) { throw ('mVolt+ profile guard not found: ' + $guard) }",
-        "    & $guard -Mode Backup -SourceDirectory (Join-Path $env:LOCALAPPDATA 'mVolt+') -BackupDirectory (Join-Path $env:LOCALAPPDATA 'mVoltPlus-ProfileBackups') -ExpectedProfileId 'E48BFF72-A9EC-4763-9BF2-F2563D5A97A8'",
+        "    & $guard -Mode Backup -SourceDirectory (Join-Path $env:LOCALAPPDATA 'mVolt+') -BackupDirectory (Join-Path $env:LOCALAPPDATA 'mVoltPlus-ProfileBackups')",
         "}"
     ],
     "bin": [
