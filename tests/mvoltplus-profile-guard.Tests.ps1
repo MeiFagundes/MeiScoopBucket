@@ -23,8 +23,12 @@ Describe 'mVolt+ profile guard' {
         function Invoke-Guard([string] $Mode, [string] $Source, [string] $Backup, [string] $Extra = '') {
             $nativeArgs = @('-NoProfile','-ExecutionPolicy','Bypass','-File',$script:Guard,'-Mode',$Mode,'-SourceDirectory',$Source,'-BackupDirectory',$Backup,'-ExpectedProfileId',$script:ProtectedId,'-ExecutablePath',($script:PowerShell+'|'+$script:PowerShell))
             if ($Extra) { $nativeArgs += $Extra.Split(' ') }
-            $output = & $script:PowerShell @nativeArgs 2>&1
-            [pscustomobject]@{ ExitCode=$LASTEXITCODE; Output=($output | Out-String) }
+            $arguments = ($nativeArgs | ForEach-Object { '"' + $_ + '"' }) -join ' '
+            $stdout = Join-Path $script:TempRoot ([guid]::NewGuid().ToString('N') + '.stdout')
+            $stderr = Join-Path $script:TempRoot ([guid]::NewGuid().ToString('N') + '.stderr')
+            $process = Start-Process -FilePath $script:PowerShell -ArgumentList $arguments -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+            $output = [System.IO.File]::ReadAllText($stdout) + [System.IO.File]::ReadAllText($stderr)
+            [pscustomobject]@{ ExitCode=$process.ExitCode; Output=$output }
         }
     }
 
