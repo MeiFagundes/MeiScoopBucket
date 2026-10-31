@@ -7,6 +7,12 @@ on:
       - 'master'
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: Commit SHA to test; defaults to the triggering ref
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -25,6 +31,7 @@ jobs:
       - name: Checkout Bucket
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
           # Need at least 2 commits to properly gather changed files for linting
           fetch-depth: 2
           path: 'my_bucket'

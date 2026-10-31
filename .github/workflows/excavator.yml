@@ -13,10 +13,39 @@ jobs:
   excavate:
     name: Excavate
     runs-on: windows-latest
+    outputs:
+      updated: ${{ steps.detect.outputs.updated }}
+      updated_sha: ${{ steps.detect.outputs.updated_sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Record starting commit
+        id: starting
+        shell: pwsh
+        run: '"sha=$(git rev-parse HEAD)" >> $env:GITHUB_OUTPUT'
       - name: Excavate
         uses: ScoopInstaller/GithubActions@5bceeda181721d9d10a18fdcc3ddca6f33467ae6 # v3.0.0
         env:
           SKIP_UPDATED: 1
+      - name: Detect pushed update commit
+        id: detect
+        shell: pwsh
+        env:
+          STARTING_SHA: ${{ steps.starting.outputs.sha }}
+        run: |
+          $head = (git rev-parse HEAD).Trim()
+          $updated = $head -ne $env:STARTING_SHA
+          "updated=$($updated.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          if ($updated) {
+            "updated_sha=$head" >> $env:GITHUB_OUTPUT
+          }
+
+  test-updated-commit:
+    name: Test Excavator update
+    needs: excavate
+    if: needs.excavate.outputs.updated == 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      checkout_ref: ${{ needs.excavate.outputs.updated_sha }}
