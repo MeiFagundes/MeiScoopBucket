@@ -1,18 +1,18 @@
 {
-    "version": "0.21.0",
+    "version": "0.21.1",
     "description": "A lightweight, native WhatsApp client",
     "homepage": "https://zapfast.rocks",
     "license": "MIT",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/crmne/zapfast/releases/download/v0.21.0/zapfast-v0.21.0-x86_64-pc-windows-msvc.zip",
-            "hash": "2ad4dec8323fe470312bd4deb720edc6ae135e051a637710b9b46d12c29e9253",
-            "extract_dir": "zapfast-v0.21.0-x86_64-pc-windows-msvc"
+            "url": "https://github.com/crmne/zapfast/releases/download/v0.21.1/zapfast-v0.21.1-x86_64-pc-windows-msvc.zip",
+            "hash": "4099ebdeb2b650714902d69827299712bf5e63b51755ce5f900afdc13ccec773",
+            "extract_dir": "zapfast-v0.21.1-x86_64-pc-windows-msvc"
         },
         "arm64": {
-            "url": "https://github.com/crmne/zapfast/releases/download/v0.21.0/zapfast-v0.21.0-aarch64-pc-windows-msvc.zip",
-            "hash": "b50e205d91b623a041855fb48f915e9f20722e64dc176803ec1318833635fa83",
-            "extract_dir": "zapfast-v0.21.0-aarch64-pc-windows-msvc"
+            "url": "https://github.com/crmne/zapfast/releases/download/v0.21.1/zapfast-v0.21.1-aarch64-pc-windows-msvc.zip",
+            "hash": "ab232f7e660fa2d8cb862f4251f57aa627d169b24c6c10931762477ec4e9e013",
+            "extract_dir": "zapfast-v0.21.1-aarch64-pc-windows-msvc"
         }
     },
     "pre_install": "Remove-Item \"$dir\\zapfast-portable.txt\" -ErrorAction SilentlyContinue",
