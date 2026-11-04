@@ -32,9 +32,11 @@ Describe 'mVolt+ autoupdate' {
             $manifest = Get-ManifestFixture
             $manifest | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $path -Encoding UTF8
             Invoke-AutoUpdate -AppName 'mvoltplus' -Path $path -Manifest $manifest -Version $Version -CustomMatches @{}
+            $text = Get-Content -LiteralPath $path -Raw
             [pscustomobject]@{
                 Directory = $directory
-                Manifest  = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+                Text      = $text
+                Manifest  = $text | ConvertFrom-Json
             }
         }
     }
@@ -45,10 +47,11 @@ Describe 'mVolt+ autoupdate' {
         }
     }
 
-    It 'keeps the installed architecture x64-only while retaining the ARM update marker' {
+    It 'keeps the installed architecture x64-only while retaining the ARM marker' {
         $manifest = Get-ManifestFixture
         @($manifest.architecture.PSObject.Properties.Name) | Should -Be @('64bit')
-        @($manifest.autoupdate.architecture.PSObject.Properties.Name) | Should -Contain 'arm64'
+        @($manifest.'##') | Should -Contain 'arm64'
+        @($manifest.autoupdate.architecture.PSObject.Properties.Name) | Should -Not -Contain 'arm64'
     }
 
     It 'updates the version, URL and hash without traversing an empty ARM hash' {
@@ -59,7 +62,19 @@ Describe 'mVolt+ autoupdate' {
             $manifest.architecture.'64bit'.url | Should -Be 'https://github.com/b00nz/mVolt/releases/download/v9.9.9/mVolt+.exe'
             $manifest.architecture.'64bit'.hash | Should -Be $script:ExpectedHash
             @($manifest.architecture.PSObject.Properties.Name) | Should -Be @('64bit')
-            @($manifest.autoupdate.architecture.PSObject.Properties.Name) | Should -Contain 'arm64'
+            @($manifest.'##') | Should -Contain 'arm64'
+            @($manifest.autoupdate.architecture.PSObject.Properties.Name) | Should -Not -Contain 'arm64'
+            Get-SupportedArchitecture $manifest 'arm64' | Should -BeNullOrEmpty
+        } finally {
+            Remove-Item -LiteralPath $result.Directory -Recurse -Force
+        }
+    }
+
+    It 'generates a manifest without trailing whitespace' {
+        $result = Invoke-FixtureUpdate '9.9.9'
+        try {
+            $badLines = @($result.Text -split "`r?`n" | Where-Object { $_ -match '^[ \t]+$' -or $_ -match '[ \t]+$' })
+            $badLines.Count | Should -Be 0
         } finally {
             Remove-Item -LiteralPath $result.Directory -Recurse -Force
         }

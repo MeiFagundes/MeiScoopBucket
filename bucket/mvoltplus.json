@@ -1,6 +1,9 @@
 {
     "version": "0.50.11",
-    "##": "Keep the empty autoupdate.arm64 marker so Scoop does not fall back to x64 on ARM. The installed architecture stays x64-only so autoupdate never tries to hash the empty entry.",
+    "##": [
+        "arm64",
+        "mVolt+ is x64-only. This marker prevents Scoop from falling back to x64 emulation on ARM."
+    ],
     "description": "NVIDIA GPU tuning and monitoring utility",
     "homepage": "https://github.com/b00nz/mVolt",
     "license": {
@@ -54,9 +57,6 @@
         "architecture": {
             "64bit": {
                 "url": "https://github.com/b00nz/mVolt/releases/download/v$version/mVolt+.exe"
-            },
-            "arm64": {
-                
             }
         }
     }
