@@ -12,4 +12,16 @@ $pesterConfig = New-PesterConfiguration -Hashtable @{
     }
 }
 $result = Invoke-Pester -Configuration $pesterConfig
-exit $result.FailedCount
+if ($null -eq $result) { exit 1 }
+
+$failed = [int]$result.FailedCount
+foreach ($property in @('FailedContainersCount', 'FailedBlocksCount')) {
+    $member = $result.PSObject.Properties[$property]
+    if ($member) { $failed += [int]$member.Value }
+}
+$totalMember = $result.PSObject.Properties['TotalCount']
+if ($totalMember -and [int]$totalMember.Value -eq 0) {
+    Write-Error 'No tests were discovered.'
+    exit 1
+}
+exit $failed

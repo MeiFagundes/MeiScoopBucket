@@ -32,20 +32,30 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.checkout_ref || github.sha }}
-          # Need at least 2 commits to properly gather changed files for linting
-          fetch-depth: 2
+          # Reusable calls validate every manifest and keep full history so tests
+          # never depend on the caller's shallow event commit. Normal pushes need
+          # at least 2 commits for changed-file linting.
+          fetch-depth: ${{ inputs.checkout_ref == '' && 2 || 0 }}
           path: 'my_bucket'
       - name: Checkout Scoop
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ScoopInstaller/Scoop
           path: 'scoop_core'
+      - name: Validate all manifests
+        env:
+          SCOOP_HOME: ${{ github.workspace }}\scoop_core
+        run: .\my_bucket\scripts\validate-manifests.ps1 -BucketPath .\my_bucket\bucket
       - name: Install and cache test dependencies
         uses: potatoqualitee/psmodulecache@9e4b63833c22c1768d648e115a9c849afdda22a5 # v6.3
         with:
           modules-to-cache: BuildHelpers, Pester
           shell: ${{ matrix.shell }}
       - name: Run tests
+        env:
+          # Reusable calls must not select changed files from the caller's event
+          # SHA, which is unavailable in the shallow update checkout.
+          CI: ${{ inputs.checkout_ref != '' && 'false' || 'true' }}
         run: |
           $env:SCOOP_HOME="$(Convert-Path '.\scoop_core')"
           .\my_bucket\bin\test.ps1
