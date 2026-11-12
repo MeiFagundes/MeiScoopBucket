@@ -23,6 +23,7 @@ scoop install mei/zapfast
 | `zapfast` | [ZapFast](https://zapfast.rocks), a lightweight native WhatsApp client | x64, ARM64 | Settings stay in `%APPDATA%\paolino\zapfast\config`, and sessions, archives, and caches stay in `%LOCALAPPDATA%\paolino\zapfast`. Scoop upgrades and uninstalls leave these folders intact. See ZapFast's [settings and files documentation](https://zapfast.rocks/settings-and-files/). |
 | `mvoltplus` | [mVolt+](https://github.com/b00nz/mVolt), NVIDIA GPU tuning and monitoring | x64 | Official standalone executable. Profiles stay in `%LOCALAPPDATA%\mVolt+` and backups go to `%LOCALAPPDATA%\mVoltPlus-ProfileBackups` before installs and upgrades. |
 | `sidequest` | [SideQuest](https://github.com/SideQuestVR/SideQuest), desktop app for sideloading and managing apps on VR headsets | x64 | Uses the official Windows ZIP from [GitHub releases](https://github.com/SideQuestVR/SideQuest/releases) and adds a Start menu shortcut. Update with `scoop update sidequest`. |
+| `persistentwindows` | [PersistentWindows](https://github.com/kangyu-california/PersistentWindows), restores window positions and sizes when display setups change | x64 | Standard release ZIP with a Start menu shortcut. The shortcut disables the in-app upgrade check, so update with `scoop update persistentwindows`. Data stays in `%LOCALAPPDATA%\PersistentWindows`. |
 
 ## Automation
 
